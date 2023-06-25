@@ -14,7 +14,7 @@
       <!-- Список рендерится из JS -->
     </ul>
 
-    <div class="add-form">
+    <div class="add-form" id="addForm">
       <input type="text" class="add-form-name" placeholder="Введите ваше имя" id="enter-name" />
       <textarea type="textarea" class="add-form-text" placeholder="Введите ваш коментарий" rows="4"
         id="enter-comment"></textarea>
@@ -33,27 +33,30 @@
 
 <script>
   "use strict";
+  const oldAddFormElement = document.getElementById("addForm")
+
+  console.log(oldAddFormElement.innerHTML);
 
   const listCommentElement = document.getElementById("list-comment")
   const enterNameElement = document.getElementById("enter-name")
   const enterCommentElement = document.getElementById("enter-comment")
   const buttonElement = document.getElementById("btn")
+  const addFormElement = document.getElementById("addForm")
 
+  // Получаем список комментов с помощью метода запросов GET
   const fetchPromiseFunc = () => {
     const fetchPromise = fetch(
       'https://wedev-api.sky.pro/api/v1/rashid-abdulkhamidov/comments',
       {
         method: "GET",
-      }
-    );
-    console.log(fetchPromise);
-
-    fetchPromise.then((response) => {
-
-      const jsonPromise = response.json();
-      console.log(jsonPromise);
-
-      jsonPromise.then((responseData) => {
+      })
+      // Показываем пользователю сообщение о том, что происходит загрузка комментариев
+      .then((response) => {
+        listCommentElement.innerHTML = 'Идет загрузка';
+        return response.json();
+      })
+      .then((responseData) => {
+        console.log(responseData);
         //Преобразовываем данные из формата API в формат приложения
         const currentDate = new Date()
         let newDate = currentDate.getDate() + '.' + currentDate.getMonth() + '.' + currentDate.getFullYear() + ' ' + currentDate.getHours() + ':' + currentDate.getMinutes()
@@ -73,7 +76,6 @@
         users = appComments;
         renderUsers();
       });
-    });
   };
 
   fetchPromiseFunc();
@@ -121,6 +123,7 @@
 
   // Рендерим список комментов
   const renderUsers = () => {
+
     const userHtml = users.map((user, index) => {
       return `<li class="comment">
         <div class="comment-header">
@@ -146,7 +149,6 @@
     initLikeButton();
     commentText();
   };
-
   renderUsers();
 
   // Добавляем коммент кнопкой написать
@@ -163,18 +165,6 @@
       enterCommentElement.classList.add('error');
       return;
     }
-    // Установка текущей даты и времени коммента
-    const currentDate = new Date()
-    let newDate = currentDate.getDate() + '.' + currentDate.getMonth() + '.' + currentDate.getFullYear() + ' ' + currentDate.getHours() + ':' + currentDate.getMinutes()
-    // Пушит в массив коментов новый коммент
-    users.push({
-      name: enterNameElement.value.replaceAll("<", "&lt;").replaceAll(">", "&gt;"),
-      comment: enterCommentElement.value.replaceAll("<", "&lt;").replaceAll(">", "&gt;"),
-      dateTime: newDate,
-      likeNumber: 0,
-      colorLike: 'like-button -no-active-like',
-    });
-
 
     const fetchPromise = fetch(
       'https://wedev-api.sky.pro/api/v1/rashid-abdulkhamidov/comments',
@@ -183,23 +173,21 @@
         body: JSON.stringify({
           text: enterCommentElement.value,
           name: enterNameElement.value,
-        }),
+        })
       });
     fetchPromise.then(() => fetchPromiseFunc());
 
-    // fetchPromiseFunc();
+    addFormElement.disabled = false;
+    addFormElement.innerHTML = oldAddFormElement.innerHTML;
 
+    fetchPromiseFunc();
 
-    users = appComments;
-    renderUsers();
-    commentText();
-
+    // Очищаем инпуты после успешного добавления комментария
     enterCommentElement.value = "";
     enterNameElement.value = "";
   });
 
   renderUsers();
-
 
   console.log("It works!");
 </script>
