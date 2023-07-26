@@ -64,7 +64,7 @@ export const renderUserComments = () => {
 
     const userHtml = users.map((user, index) => {
 
-      const createDate = formatDateToRu(new Date(user.date), 'yyyy/MM/dd hh:mm:ss');
+      const createDate = format(new Date(user.date), 'yyyy/MM/dd hh:mm:ss');
 
       return `<li class="comment">
           <div class="comment-header">
